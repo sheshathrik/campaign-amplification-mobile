@@ -48,6 +48,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   const [activeMainTab, setActiveMainTab] = useState<ProfileMainTab>('creator_dashboard');
   const [creatorStatusFilter, setCreatorStatusFilter] = useState<CampaignStatus | 'all'>('all');
   const [feedbackInput, setFeedbackInput] = useState<string>('');
+  const [selectedInfoTopic, setSelectedInfoTopic] = useState<string | null>(null);
 
   // Creator's campaigns
   const myCampaigns = campaigns.filter((c) => {
@@ -391,6 +392,37 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           </View>
         )}
 
+        {/* Secondary Destinations: Partners, About, How It Works, FAQs, Terms, Community Guidelines */}
+        <View style={[styles.secondarySection, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+          <Text style={[styles.secondaryHeader, { color: colors.text }]}>Platform Transparency & Policies</Text>
+
+          {[
+            { id: 'how_it_works', title: 'How Amplification Works', subtitle: 'Message pooling vs charitable donation', icon: 'bulb-outline' },
+            { id: 'faqs', title: 'Frequently Asked Questions', subtitle: 'Fact-checking, verification, and timing', icon: 'help-circle-outline' },
+            { id: 'refund_policy', title: 'Fees, Escrow & Refund Policy', subtitle: '5% platform fee & unspent ad funds', icon: 'shield-outline' },
+            { id: 'guidelines', title: 'Community & Advertising Standards', subtitle: 'Truth-in-advertising rules & ethics', icon: 'document-text-outline' },
+            { id: 'partners', title: 'Ad Distribution Partners', subtitle: 'Meta, Google, X & Open Web publishers', icon: 'globe-outline' },
+          ].map((item, idx) => (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => setSelectedInfoTopic(item.id)}
+              style={[
+                styles.secondaryLinkRow,
+                { borderBottomColor: colors.surfaceBorder, borderBottomWidth: idx < 4 ? 1 : 0 },
+              ]}
+            >
+              <View style={[styles.secondaryIconWrap, { backgroundColor: isDark ? 'rgba(99, 102, 241, 0.15)' : '#EEF2FF' }]}>
+                <Ionicons name={item.icon as any} size={18} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: Spacing.md }}>
+                <Text style={[styles.secondaryLinkTitle, { color: colors.text }]}>{item.title}</Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted }}>{item.subtitle}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.textSubtle} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
         {/* Reset Demo State Button */}
         <TouchableOpacity
           onPress={() => {
@@ -405,6 +437,97 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           <Text style={{ color: colors.textSubtle, fontSize: 12 }}>Reset Sample Demo Data</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Policy & Secondary Info Modal */}
+      {selectedInfoTopic && (
+        <View style={StyleSheet.absoluteFill}>
+          <View style={[styles.policyModalBackdrop, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
+            <View style={[styles.policyModalCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <View style={styles.policyModalHeader}>
+                <Text style={[styles.policyModalTitle, { color: colors.text }]}>
+                  {selectedInfoTopic === 'how_it_works' ? 'How Community Amplification Works' :
+                   selectedInfoTopic === 'faqs' ? 'Frequently Asked Questions' :
+                   selectedInfoTopic === 'refund_policy' ? 'Fees, Escrow & Refund Policy' :
+                   selectedInfoTopic === 'guidelines' ? 'Community Guidelines & Ad Rules' : 'Distribution Partners'}
+                </Text>
+                <TouchableOpacity onPress={() => setSelectedInfoTopic(null)} style={{ padding: 4 }}>
+                  <Ionicons name="close" size={22} color={colors.textMuted} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={{ padding: Spacing.lg }} showsVerticalScrollIndicator={false}>
+                {selectedInfoTopic === 'how_it_works' && (
+                  <View>
+                    <Text style={[styles.policyP, { color: colors.text }]}>
+                      The Campaign Amplification Platform allows communities, creators, and researchers to pool contributions toward wholesale digital advertising inventory.
+                    </Text>
+                    <Text style={[styles.policyP, { color: colors.textMuted }]}>
+                      Unlike traditional charity platforms where funds transfer directly to bank accounts, 100% of campaign proceeds (minus a transparent 5% payment/platform fee) are used to purchase targeted ad placements on Meta, Google, and independent news outlets.
+                    </Text>
+                  </View>
+                )}
+
+                {selectedInfoTopic === 'faqs' && (
+                  <View>
+                    <Text style={[styles.policyPBold, { color: colors.text }]}>Q: Who verifies the claims made in campaigns?</Text>
+                    <Text style={[styles.policyP, { color: colors.textMuted }]}>
+                      A: Our internal fact-checking reviewers audit all citations against peer-reviewed journals, government statistics, and accredited research institutes before any campaign is unlocked for funding.
+                    </Text>
+                    <Text style={[styles.policyPBold, { color: colors.text }]}>Q: What happens if a campaign doesn’t reach its goal?</Text>
+                    <Text style={[styles.policyP, { color: colors.textMuted }]}>
+                      A: If a campaign expires before meeting its distribution threshold, all unspent funds are credited back or refunded to backers.
+                    </Text>
+                  </View>
+                )}
+
+                {selectedInfoTopic === 'refund_policy' && (
+                  <View>
+                    <Text style={[styles.policyPBold, { color: colors.text }]}>Transparent Fee Structure</Text>
+                    <Text style={[styles.policyP, { color: colors.textMuted }]}>
+                      We charge a flat 5% platform fee to cover credit card interchange costs, automated bot protection, and source audit operations.
+                    </Text>
+                    <Text style={[styles.policyPBold, { color: colors.text }]}>Unspent Funds Escrow</Text>
+                    <Text style={[styles.policyP, { color: colors.textMuted }]}>
+                      All backer payments sit in a secure escrow buffer. Funds are released strictly as advertising delivery impressions are verified by third-party ad networks.
+                    </Text>
+                  </View>
+                )}
+
+                {selectedInfoTopic === 'guidelines' && (
+                  <View>
+                    <Text style={[styles.policyPBold, { color: colors.text }]}>Truth-in-Advertising Rules</Text>
+                    <Text style={[styles.policyP, { color: colors.textMuted }]}>
+                      1. All claims must link to public, reputable sources.
+                      2. No deceptive headlines or clickbait exaggerations.
+                      3. Clear sponsored labeling on all ad creative placements.
+                    </Text>
+                  </View>
+                )}
+
+                {selectedInfoTopic === 'partners' && (
+                  <View>
+                    <Text style={[styles.policyPBold, { color: colors.text }]}>Ad Distribution Network</Text>
+                    <Text style={[styles.policyP, { color: colors.textMuted }]}>
+                      Our platform connects directly via authorized APIs to:
+                      • Meta Ads (Facebook & Instagram Feed)
+                      • Google Ads & YouTube Discovery
+                      • X / Twitter Sponsored Feeds
+                      • Open Web Display Networks
+                    </Text>
+                  </View>
+                )}
+
+                <Button
+                  title="Close"
+                  variant="primary"
+                  onPress={() => setSelectedInfoTopic(null)}
+                  style={{ marginTop: Spacing.lg, marginBottom: Spacing.xl }}
+                />
+              </ScrollView>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -637,6 +760,67 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.lg,
+  },
+  secondarySection: {
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  secondaryHeader: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: Spacing.md,
+  },
+  secondaryLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+  },
+  secondaryIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryLinkTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  policyModalBackdrop: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  policyModalCard: {
+    borderTopLeftRadius: Radius.xl * 1.5,
+    borderTopRightRadius: Radius.xl * 1.5,
+    maxHeight: '85%',
+    borderTopWidth: 1,
+  },
+  policyModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.06)',
+  },
+  policyModalTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    flex: 1,
+  },
+  policyP: {
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: Spacing.md,
+  },
+  policyPBold: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 4,
   },
 });
 
