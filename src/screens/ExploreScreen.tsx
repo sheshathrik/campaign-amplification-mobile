@@ -51,6 +51,7 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortOption>('trending');
   const [isSimulatingLoad, setIsSimulatingLoad] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const handleCategorySelect = (cat: CampaignCategory | 'All') => {
     if (Platform.OS !== 'web') {
@@ -118,14 +119,35 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
         </Text>
 
         {/* Search Bar */}
-        <View style={[styles.searchBox, { backgroundColor: colors.surfaceSubtle, borderColor: colors.surfaceBorder }]}>
-          <Ionicons name="search-outline" size={18} color={colors.textMuted} />
+        <View
+          style={[
+            styles.searchBox,
+            {
+              backgroundColor: colors.surfaceSubtle,
+              borderColor: isSearchFocused ? colors.primary : colors.surfaceBorder,
+              borderWidth: isSearchFocused ? 1.5 : 1,
+            },
+          ]}
+        >
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color={isSearchFocused ? colors.primary : colors.textMuted}
+          />
           <TextInput
             placeholder="Search campaigns, causes, or creators..."
             placeholderTextColor={colors.textSubtle}
             value={searchQuery}
             onChangeText={setSearchQuery}
-            style={[styles.searchInput, { color: colors.text }]}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            style={[
+              styles.searchInput,
+              {
+                color: colors.text,
+                ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
+              },
+            ]}
           />
           {searchQuery ? (
             <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -279,6 +301,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     marginLeft: Spacing.sm,
+    backgroundColor: 'transparent',
+    paddingVertical: 0,
+    borderWidth: 0,
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
   },
   categoriesTrack: {
     paddingVertical: 4,

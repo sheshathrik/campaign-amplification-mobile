@@ -150,3 +150,4 @@ CREATE TABLE moderation_audit_logs (
 CREATE INDEX idx_campaigns_status ON campaigns(status);
 CREATE INDEX idx_campaigns_category ON campaigns(category);
 CREATE INDEX idx_contributions_campaign ON contributions(campaign_id);
+

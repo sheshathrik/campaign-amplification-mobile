@@ -7,6 +7,7 @@ import {
   TextInputProps,
   ViewStyle,
   TextStyle,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography } from '../../theme';
@@ -143,6 +144,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     paddingVertical: Spacing.sm,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
   },
   helperText: {
     fontSize: 12,

@@ -87,3 +87,4 @@ Use this battle-tested, word-for-word demo script to record your submission vide
 > *Under the hood, we have a complete **PostgreSQL relational schema** and Express REST architecture in `backend/`.*
 >
 > *Thank you, and I look forward to contributing as part of the founding engineering team!"*
+

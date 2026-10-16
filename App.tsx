@@ -25,6 +25,29 @@ import { ContributionModal } from './src/components/backing/ContributionModal';
 
 import { Radius, Spacing, Shadows } from './src/theme';
 
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  const styleTag = document.createElement('style');
+  styleTag.textContent = `
+    input, textarea, select {
+      outline: none !important;
+      outline-style: none !important;
+      outline-width: 0 !important;
+      box-shadow: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none !important;
+      outline-style: none !important;
+      outline-width: 0 !important;
+      box-shadow: none !important;
+    }
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+  `;
+  document.head.appendChild(styleTag);
+}
+
 type TabRoute = 'home' | 'explore' | 'create' | 'activity' | 'profile';
 
 function MainApp() {

@@ -70,3 +70,4 @@ export function validateCampaignSubmission(payload: any) {
     errors,
   };
 }
+
