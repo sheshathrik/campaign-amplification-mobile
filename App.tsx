@@ -1,20 +1,248 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  Platform,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function App() {
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { CampaignProvider, useCampaigns } from './src/context/CampaignContext';
+
+import { HomeScreen } from './src/screens/HomeScreen';
+import { ExploreScreen } from './src/screens/ExploreScreen';
+import { CreateScreen } from './src/screens/CreateScreen';
+import { ActivityScreen } from './src/screens/ActivityScreen';
+import { ProfileScreen } from './src/screens/ProfileScreen';
+import { CampaignDetailScreen } from './src/screens/CampaignDetailScreen';
+import { ContributionModal } from './src/components/backing/ContributionModal';
+
+import { Radius, Spacing, Shadows } from './src/theme';
+
+type TabRoute = 'home' | 'explore' | 'create' | 'activity' | 'profile';
+
+function MainApp() {
+  const { colors, isDark } = useTheme();
+  const { campaigns, notifications } = useCampaigns();
+  const insets = useSafeAreaInsets();
+
+  const [activeTab, setActiveTab] = useState<TabRoute>('home');
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const [backingModalCampaignId, setBackingModalCampaignId] = useState<string | null>(null);
+
+  const unreadNotifsCount = notifications.filter((n) => !n.read).length;
+
+  const handleTabPress = (tab: TabRoute) => {
+    if (Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (_) {}
+    }
+    // If viewing detail, pressing a tab takes you back to root tabs
+    setSelectedCampaignId(null);
+    setActiveTab(tab);
+  };
+
+  const selectedCampaign = campaigns.find((c) => c.id === selectedCampaignId);
+  const backingCampaign = campaigns.find((c) => c.id === backingModalCampaignId);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={[styles.rootContainer, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+
+      {/* Screen Area with Safe Area Handling */}
+      <View style={[styles.screenArea, { paddingTop: insets.top }]}>
+        {selectedCampaign ? (
+          <CampaignDetailScreen
+            campaign={selectedCampaign}
+            onBack={() => setSelectedCampaignId(null)}
+          />
+        ) : (
+          <>
+            {activeTab === 'home' && (
+              <HomeScreen
+                onNavigateTab={(tab) => setActiveTab(tab)}
+                onSelectCampaign={(id) => setSelectedCampaignId(id)}
+                onBackCampaign={(id) => setBackingModalCampaignId(id)}
+              />
+            )}
+            {activeTab === 'explore' && (
+              <ExploreScreen
+                onSelectCampaign={(id) => setSelectedCampaignId(id)}
+                onBackCampaign={(id) => setBackingModalCampaignId(id)}
+              />
+            )}
+            {activeTab === 'create' && (
+              <CreateScreen
+                onCampaignSubmitted={(id) => {
+                  setSelectedCampaignId(id);
+                }}
+                onNavigateHome={() => setActiveTab('home')}
+              />
+            )}
+            {activeTab === 'activity' && (
+              <ActivityScreen
+                onSelectCampaign={(id) => setSelectedCampaignId(id)}
+              />
+            )}
+            {activeTab === 'profile' && (
+              <ProfileScreen
+                onSelectCampaign={(id) => setSelectedCampaignId(id)}
+                onEditDraft={() => setActiveTab('create')}
+                onStartCampaign={() => setActiveTab('create')}
+              />
+            )}
+          </>
+        )}
+      </View>
+
+      {/* Stable 5-Destination Bottom Navigation Bar (Hidden when in full detail view if needed, or persistent) */}
+      {!selectedCampaign && (
+        <View
+          style={[
+            styles.bottomNavBar,
+            {
+              backgroundColor: colors.tabBarBackground,
+              borderTopColor: colors.tabBarBorder,
+              paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.sm,
+              ...Shadows.md,
+            },
+          ]}
+        >
+          {[
+            { id: 'home', label: 'Home', icon: 'home-outline', activeIcon: 'home' },
+            { id: 'explore', label: 'Explore', icon: 'compass-outline', activeIcon: 'compass' },
+            { id: 'create', label: 'Create', icon: 'add-circle-outline', activeIcon: 'add-circle' },
+            { id: 'activity', label: 'Activity', icon: 'notifications-outline', activeIcon: 'notifications', badge: unreadNotifsCount },
+            { id: 'profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
+          ].map((item) => {
+            const isActive = activeTab === item.id;
+            const isCreate = item.id === 'create';
+            return (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => handleTabPress(item.id as TabRoute)}
+                activeOpacity={0.8}
+                style={styles.navTabItem}
+              >
+                <View style={styles.navIconContainer}>
+                  {isCreate ? (
+                    <View style={[styles.createIconPill, { backgroundColor: colors.primary }]}>
+                      <Ionicons name="add" size={20} color="#FFFFFF" />
+                    </View>
+                  ) : (
+                    <Ionicons
+                      name={(isActive ? item.activeIcon : item.icon) as any}
+                      size={22}
+                      color={isActive ? colors.tabBarActive : colors.tabBarInactive}
+                    />
+                  )}
+                  {item.badge ? (
+                    <View style={styles.badgeIndicator}>
+                      <Text style={styles.badgeText}>{item.badge}</Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text
+                  style={[
+                    styles.navTabLabel,
+                    {
+                      color: isActive ? colors.tabBarActive : colors.tabBarInactive,
+                      fontWeight: isActive ? '700' : '500',
+                    },
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+
+      {/* Direct Backing Modal trigger from card quick action */}
+      {backingCampaign && (
+        <ContributionModal
+          visible={!!backingCampaign}
+          campaign={backingCampaign}
+          onClose={() => setBackingModalCampaignId(null)}
+        />
+      )}
     </View>
   );
 }
 
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <CampaignProvider>
+          <MainApp />
+        </CampaignProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
+  rootContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  screenArea: {
+    flex: 1,
+  },
+  bottomNavBar: {
+    flexDirection: 'row',
+    height: Platform.OS === 'ios' ? 84 : 64,
+    borderTopWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingTop: 8,
+  },
+  navTabItem: {
     alignItems: 'center',
     justifyContent: 'center',
+    flex: 1,
+  },
+  navIconContainer: {
+    position: 'relative',
+    height: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  createIconPill: {
+    width: 32,
+    height: 24,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navTabLabel: {
+    fontSize: 10,
+    marginTop: 2,
+    letterSpacing: -0.1,
+  },
+  badgeIndicator: {
+    position: 'absolute',
+    top: -3,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    minWidth: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '700',
   },
 });
