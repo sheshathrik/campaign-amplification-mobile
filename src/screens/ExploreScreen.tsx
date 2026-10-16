@@ -124,15 +124,15 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
             styles.searchBox,
             {
               backgroundColor: colors.surfaceSubtle,
-              borderColor: isSearchFocused ? colors.primary : colors.surfaceBorder,
-              borderWidth: isSearchFocused ? 1.5 : 1,
+              borderColor: colors.surfaceBorder,
+              borderWidth: 1,
             },
           ]}
         >
           <Ionicons
             name="search-outline"
             size={18}
-            color={isSearchFocused ? colors.primary : colors.textMuted}
+            color={colors.textMuted}
           />
           <TextInput
             placeholder="Search campaigns, causes, or creators..."

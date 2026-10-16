@@ -102,7 +102,7 @@ function MainApp() {
         )}
       </View>
 
-      {/* Stable 5-Destination Bottom Navigation Bar (Hidden when in full detail view if needed, or persistent) */}
+      {/* Stable 5-Destination Bottom Navigation Bar */}
       {!selectedCampaign && (
         <View
           style={[
@@ -110,7 +110,8 @@ function MainApp() {
             {
               backgroundColor: colors.tabBarBackground,
               borderTopColor: colors.tabBarBorder,
-              paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.sm,
+              paddingTop: 8,
+              paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 14 : 8),
               ...Shadows.md,
             },
           ]}
@@ -128,13 +129,25 @@ function MainApp() {
               <TouchableOpacity
                 key={item.id}
                 onPress={() => handleTabPress(item.id as TabRoute)}
-                activeOpacity={0.8}
+                activeOpacity={0.75}
                 style={styles.navTabItem}
+                hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
               >
                 <View style={styles.navIconContainer}>
                   {isCreate ? (
-                    <View style={[styles.createIconPill, { backgroundColor: colors.primary }]}>
-                      <Ionicons name="add" size={20} color="#FFFFFF" />
+                    <View
+                      style={[
+                        styles.createIconPill,
+                        {
+                          backgroundColor: isActive ? colors.primary : (isDark ? 'rgba(99, 102, 241, 0.25)' : colors.primaryLight),
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={18}
+                        color={isActive ? '#FFFFFF' : colors.primary}
+                      />
                     </View>
                   ) : (
                     <Ionicons
@@ -150,6 +163,7 @@ function MainApp() {
                   ) : null}
                 </View>
                 <Text
+                  numberOfLines={1}
                   style={[
                     styles.navTabLabel,
                     {
@@ -224,39 +238,40 @@ const styles = StyleSheet.create({
   },
   bottomNavBar: {
     flexDirection: 'row',
-    height: Platform.OS === 'ios' ? 84 : 64,
-    borderTopWidth: 1,
-    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    alignItems: 'flex-start',
     justifyContent: 'space-around',
-    paddingTop: 8,
   },
   navTabItem: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+    paddingVertical: 2,
   },
   navIconContainer: {
     position: 'relative',
-    height: 26,
+    height: 28,
+    width: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
   createIconPill: {
-    width: 32,
+    width: 34,
     height: 24,
     borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   navTabLabel: {
-    fontSize: 10,
-    marginTop: 2,
-    letterSpacing: -0.1,
+    fontSize: 11,
+    marginTop: 3,
+    letterSpacing: -0.2,
+    textAlign: 'center',
   },
   badgeIndicator: {
     position: 'absolute',
-    top: -3,
-    right: -8,
+    top: -2,
+    right: 2,
     backgroundColor: '#EF4444',
     borderRadius: 8,
     paddingHorizontal: 4,
